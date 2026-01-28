@@ -1,0 +1,16 @@
+{
+  "name": "camera-dashboard-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.13.1",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.5"
+  }
+}

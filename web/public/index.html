@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rue Romain Camera Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #0b0e14 0%, #1a1f2e 100%);
+      background-attachment: fixed;
+      color: #e6e9ef;
+    }
+    header {
+      padding: 24px 32px;
+      background: rgba(17, 21, 28, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    header h1 {
+      margin: 0 0 4px 0;
+      font-size: 28px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #e6e9ef 0%, #a0a8b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      margin: 0;
+      font-size: 14px;
+      color: #7a8599;
+      font-weight: 400;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 20px;
+      padding: 24px;
+    }
+    .card {
+      background: rgba(17, 21, 28, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      border-color: rgba(0, 102, 204, 0.3);
+    }
+    .card h3 {
+      margin: 8px 12px;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      background: #000;
+      display: block;
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 102, 204, 0.5);
+      z-index: 1000;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 8px 28px rgba(0, 102, 204, 0.7);
+    }
+
+    /* Side Panel */
+    .side-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 420px;
+      height: 100vh;
+      background: rgba(17, 21, 28, 0.98);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+    .side-panel.open {
+      right: 0;
+    }
+    .side-panel-header {
+      padding: 28px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .side-panel-content {
+      padding: 24px;
+    }
+    .close-panel {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e6e9ef;
+      border-radius: 6px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .close-panel:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Rue Romain Camera Dashboard</h1>
+    <p>Live surveillance feed</p>
+  </header>
+  <main>
+    <section id="grid" class="grid"></section>
+  </main>
+
+  <!-- Floating Action Button -->
+  <button class="fab" id="add-camera-btn" title="Add Camera">+</button>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Side Panel -->
+  <div class="side-panel" id="side-panel">
+    <div class="side-panel-header">
+      <h2 style="margin: 0; font-size: 18px;">Add New Camera</h2>
+      <button class="close-panel" id="close-panel">Close</button>
+    </div>
+    <div class="side-panel-content">
+      <form id="camera-form" style="display: grid; gap: 12px;">
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #999;">Camera Name</label>
+          <input type="text" id="cam-name" placeholder="e.g., Front Door" required style="padding: 10px; background: #0b0e14; border: 1px solid #222; color: #e6e9ef; border-radius: 4px; width: 100%; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #999;">Location</label>
+          <input type="text" id="cam-location" placeholder="e.g., Living Room" style="padding: 10px; background: #0b0e14; border: 1px solid #222; color: #e6e9ef; border-radius: 4px; width: 100%; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #999;">Stream Type</label>
+          <select id="cam-type" required style="padding: 10px; background: #0b0e14; border: 1px solid #222; color: #e6e9ef; border-radius: 4px; width: 100%; box-sizing: border-box;">
+            <option value="">Select Type</option>
+            <option value="mjpeg">MJPEG (ESP32 Cameras)</option>
+            <option value="hls">HLS (Streaming Server)</option>
+          </select>
+        </div>
+        <div id="mjpeg-fields">
+          <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #999;">Camera URL</label>
+          <input type="url" id="cam-url" placeholder="http://192.168.0.xxx/" style="padding: 10px; background: #0b0e14; border: 1px solid #222; color: #e6e9ef; border-radius: 4px; width: 100%; box-sizing: border-box;">
+          <small style="color: #666; font-size: 12px;">For MJPEG cameras</small>
+        </div>
+        <div id="hls-fields" style="display: none;">
+          <label style="display: block; margin-bottom: 4px; font-size: 13px; color: #999;">HLS Stream Path</label>
+          <input type="text" id="cam-hls" placeholder="/streams/camera1/index.m3u8" style="padding: 10px; background: #0b0e14; border: 1px solid #222; color: #e6e9ef; border-radius: 4px; width: 100%; box-sizing: border-box;">
+          <small style="color: #666; font-size: 12px;">For HLS streams</small>
+        </div>
+        <button type="submit" style="padding: 12px; background: #0066cc; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 8px;">Add Camera</button>
+      </form>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="app.js"></script>
+</body>
+</html>
